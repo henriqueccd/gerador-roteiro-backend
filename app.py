@@ -2,6 +2,7 @@ import google.generativeai as genai
 from flask import Flask, jsonify, request
 from flask_cors import CORS # Importa a extensão CORS
 import json # Importa a biblioteca JSON para trabalhar com dados JSON
+import os #
 
 app = Flask(__name__)
 CORS(app) # Habilita o CORS para todas as rotas (permite comunicação entre frontend e backend)
@@ -128,4 +129,5 @@ Siga estas instruções com atenção, focando em gerar uma narrativa que prenda
     return jsonify(roteiro_gerado_json)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # No Render, o host deve ser '0.0.0.0' e a porta deve vir da variável de ambiente 'PORT'
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000), debug=False)
