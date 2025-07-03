@@ -25,7 +25,7 @@ def generate_roteiro():
     if not tema_escolhido or not num_blocos:
         return jsonify({"error": "Dados incompletos fornecidos. Por favor, preencha todos os campos."}), 400
 
-    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (COM REFORÇO FINAL NO JSON!) ---
+    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (COM TODOS OS AJUSTES FINAIS!) ---
     prompt_para_ia = f"""
 Você é um roteirista profissional com experiência em histórias emocionantes, visceralmente detalhadas e em primeira pessoa, voltadas para vídeos narrados no estilo "canal dark" brasileiro. Seu público são brasileiros que consomem conteúdos sobre conflitos familiares profundos, traições dilacerantes, superações marcantes e revelações chocantes.
 
@@ -38,13 +38,13 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
     * **Reviravoltas Chocantes e Situações Inesperadas:** A história DEVE conter no mínimo duas reviravoltas significativas e/ou situações inesperadas que alterem drasticamente o curso da narrativa, elevando a tensão de forma dramática. Pense em "plot twists" que um espectador de novela esperaria.
     * **Presença Vívida do Cotidiano Brasileiro:** Incorpore de forma autêntica elementos culturais, sociais e comportamentais do cotidiano brasileiro. Pense em gírias, costumes familiares, cenários típicos (como uma cozinha de casa de vó, uma rua movimentada de bairro, uma reunião de família com discussões veladas), interações sociais e problemas comuns no Brasil. Faça o público se reconhecer na ambientação.
 
-    * **Extensão e Densidade por Bloco:** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco DEVE ter entre **1500 e 2000 palavras**, garantindo que o conteúdo seja densíssimo, aprofundado e preencha substancialmente essa extensão. A IA deve se esforçar para atingir o limite superior (2000 palavras) se o conteúdo e a qualidade narrativa permitirem, não "enchendo linguiça", mas aprofundando o drama e os detalhes.
+    * **Extensão e Densidade por Bloco (EM CARACTERES!):** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco DEVE ter entre **1500 e 2000 caracteres**, garantindo que o conteúdo seja densíssimo, aprofundado e preencha substancialmente essa extensão. A IA deve se esforçar para atingir o limite superior (2000 caracteres) se o conteúdo e a qualidade narrativa permitirem, não "enchendo linguiça", mas aprofundando o drama e os detalhes.
 
     * **Linguagem e Voz da Narrativa (Aprimorada):** A linguagem e o ritmo da narrativa devem ser autênticos, apropriados ao contexto e emoção da história, e personalizados IMERSIVAMENTE de acordo com a idade, características e o tom de voz implícito do personagem principal. Por exemplo, uma personagem mais velha pode ter uma voz mais "carregada", lenta, nostálgica e reflexiva, com um vocabulário que remeta à sua vivência e sabedoria popular. Já uma mais jovem pode ser mais ágil, direta, impulsiva, e usar gírias mais contemporâneas ou um tom de desabafo intenso. A linguagem pode variar entre tons informais e mais formais quando a trama assim exigir, mas sempre mantendo a conexão emocional e a cotidianidade brasileira.
 
-    * **Divisão da História:** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco DEVE ter a quantidade de palavras calculada acima.
+    * **Divisão da História:** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco DEVE ter a quantidade de caracteres calculada acima.
 
-    * **Voz Pessoal e Confessional (Desabafo):** Escreva como se o próprio narrador(a) estivesse desabafando diretamente com o leitor/espectador, com uma honestidade brutal e uma intimidade que convida à empatia. A narrativa deve fluir com naturalidade, permeada por uma emoção palpável, construindo um suspense envolvente através da cadência das palavras e o ritmo do desabafo.
+    * **Voz Pessoal e Confessional (Desabafos e Fluidez):** Escreva como se o próprio narrador(a) estivesse desabafando diretamente com o leitor/espectador, com uma honestidade brutal e uma intimidade que convida à empatia. A narrativa DEVE fluir com naturalidade, permeada por uma emoção palpável, construindo um suspense envolvente através da cadência das palavras e o ritmo do desabafo, como em uma conversa tensa e pessoal.
 
     * **Originalidade Constante:**
         * Crie expressões únicas para cada roteiro.
@@ -53,12 +53,12 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
         * Ao sugerir analogias ou histórias, crie exemplos únicos e novos para este roteiro. Seja criativo e inteligente, mostrando um profundo entendimento do objetivo, emoção e público-alvo.
         * Procure maneiras criativas de expressar a mesma ideia. Invente novas maneiras de apresentar conceitos que já são conhecidos.
 
-    * **Variedade na Estrutura dos Blocos:** A história deve seguir estritamente esta progressão em 5 atos, com a emoção e o suspense aumentando progressivamente:
-        * **Ato 1 (Bloco 1):** Apresentação do narrador e do problema inicial. Estabeleça o tom de desabafo e plante a semente do mistério ou conflito.
-        * **Ato 2 (Bloco 2):** Crescimento do conflito e da tensão. Detalhe os desafios iniciais e como eles afetam o narrador. Aprofunde as emoções.
-        * **Ato 3 (Bloco 3):** A primeira grande reviravolta. Introduza um evento inesperado que mude a direção da história, chocando o narrador e o público.
-        * **Ato 4 (Bloco 4):** Conflito no auge, descobertas bombásticas. A trama se intensifica com novas revelações e confrontos. O narrador está no limite.
-        * **Ato 5 (Bloco 5):** Desfecho (feliz ou trágico) com lição ou emoção final. O conflito principal se resolve, mas deixa uma marca profunda. O desfecho deve ser impactante e ressoar emocionalmente. (Adapte o número de blocos para acomodar os 5 atos se `num_blocos` for diferente de 5, distribuindo os atos entre os blocos disponíveis.)
+    * **Variedade na Estrutura dos Blocos (5 ATOS!):** A história DEVE seguir estritamente esta progressão em 5 atos, com a emoção e o suspense aumentando progressivamente. **Se o número de blocos solicitado for diferente de 5, distribua os atos entre os blocos disponíveis de forma lógica.**
+        * **Ato 1 (Apresentação):** Apresentação do narrador e do problema inicial. Estabeleça o tom de desabafo e plante a semente do mistério ou conflito.
+        * **Ato 2 (Crescimento):** Crescimento do conflito e da tensão. Detalhe os desafios iniciais e como eles afetam o narrador. Aprofunde as emoções.
+        * **Ato 3 (Reviravolta):** A primeira grande reviravolta. Introduza um evento inesperado que mude a direção da história, chocando o narrador e o público.
+        * **Ato 4 (Auge):** Conflito no auge, descobertas bombásticas. A trama se intensifica com novas revelações e confrontos. O narrador está no limite.
+        * **Ato 5 (Desfecho):** Desfecho (feliz ou trágico) com lição ou emoção final. O conflito principal se resolve, mas deixa uma marca profunda. O desfecho deve ser impactante e ressoar emocionalmente.
 
     * **Gatilhos Mentais:** Use de 3 a 5 gatilhos mentais por roteiro, de forma sutil e estratégica, para não sobrecarregar o público. Distribua-os na Introdução, Desenvolvimento e Encerramento. Crie variações de gatilhos mentais originais e autênticos para cada novo roteiro. Exemplos de categorias a serem inspiradas: Autoridade, Reciprocidade, Escassez, Prova Social, Curiosidade avassaladora, Promessa de Transformação pessoal, Novidade (da revelação), Medo da Perda, Urgência da situação, Conexão profunda, Simplicidade (na linguagem para facilitar a identificação).
 
