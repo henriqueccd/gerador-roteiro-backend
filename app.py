@@ -25,7 +25,7 @@ def generate_roteiro():
     if not tema_escolhido or not num_blocos:
         return jsonify({"error": "Dados incompletos fornecidos. Por favor, preencha todos os campos."}), 400
 
-    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (COM TODOS OS AJUSTES FINAIS!) ---
+    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (COM INSTRUÇÕES DE JSON ULTRA-ROBUSTAS!) ---
     prompt_para_ia = f"""
 Você é um roteirista profissional com experiência em histórias emocionantes, visceralmente detalhadas e em primeira pessoa, voltadas para vídeos narrados no estilo "canal dark" brasileiro. Seu público são brasileiros que consomem conteúdos sobre conflitos familiares profundos, traições dilacerantes, superações marcantes e revelações chocantes.
 
@@ -65,6 +65,7 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
     * **Comandos Humanos Emocionais:** Use comandos humanos com Emoções predominantes e sentimentos associados, ao longo do roteiro (introdução, meio e fim), para tornar o roteiro mais humanizado e criar uma conexão mais próxima e íntima com o público. Crie variações originais e impactantes para cada novo roteiro.
 
 **FORMATO DE SAÍDA FINAL (APENAS JSON): A resposta da IA DEVE ser um objeto JSON válido, e NADA ALÉM DISSO. Não inclua texto explicativo, formatação Markdown (como ```json), ou qualquer outro caractere antes ou depois do JSON. Apenas o JSON puro. É ABSOLUTAMENTE CRÍTICO que a saída seja JSON válido para o sistema funcionar.**
+**- Escapamento de Aspas: Todas as aspas duplas internas dentro das strings (como dentro dos textos da história ou descrições) DEVEM ser escapadas com uma barra invertida (ex: "Ela disse: \"Adeus\".").**
 
 * `tema_sugerido`: (string) O tema escolhido ou gerado.
 * `historia`: (array de strings) Uma lista onde cada item é o texto de um bloco da história.
@@ -108,12 +109,32 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
             if cleaned_response.endswith("```"):
                 cleaned_response = cleaned_response[:-len("```")].strip()
 
-        # Debugging: Print a resposta limpa antes de tentar o JSON.loads()
-        print(f"DEBUG: Resposta limpa da IA para JSON.loads(): \n{cleaned_response[:500]}...")
-
-        roteiro_gerado_json = json.loads(cleaned_response) # Converte a string JSON para um objeto Python
-        print(f"DEBUG: JSON parseado com sucesso.")
-
+        # Tenta encontrar o bloco JSON puro usando chaves de abertura e fechamento
+        json_start = cleaned_response.find('{')
+        json_end = cleaned_response.rfind('}')
+        
+        if json_start != -1 and json_end != -1 and json_end > json_start:
+            json_string_candidate = cleaned_response[json_start : json_end + 1]
+            print(f"DEBUG: JSON string candidata para loads() (limpa e isolada): \n{json_string_candidate[:500]}...")
+            roteiro_gerado_json = json.loads(json_string_candidate) # Converte a string JSON para um objeto Python
+            print(f"DEBUG: JSON parseado com sucesso.")
+            
+            # Garante que 'historia' é uma lista de strings. Se a IA retornar uma string única, converte para lista.
+            if 'historia' in roteiro_gerado_json and isinstance(roteiro_gerado_json['historia'], str):
+                roteiro_gerado_json['historia'] = [roteiro_gerado_json['historia']]
+            
+            # Garante que 'titulos_sugeridos' é uma lista de strings.
+            if 'titulos_sugeridos' in roteiro_gerado_json and isinstance(roteiro_gerado_json['titulos_sugeridos'], str):
+                roteiro_gerado_json['titulos_sugeridos'] = [roteiro_gerado_json['titulos_sugeridos']]
+            
+            # Garante que 'elementos_thumbnail' é um objeto (dicionário).
+            if 'elementos_thumbnail' in roteiro_gerado_json and not isinstance(roteiro_gerado_json['elementos_thumbnail'], dict):
+                print("AVISO: elementos_thumbnail não é um dicionário, tentando converter ou usar padrão.")
+                roteiro_gerado_json['elementos_thumbnail'] = {} # Reseta para evitar erro no frontend
+            
+        else:
+            raise json.JSONDecodeError(f"Não foi possível encontrar um bloco JSON completo. Resposta limpa: {cleaned_response}", cleaned_response, 0)
+            
     except json.JSONDecodeError as e:
         print(f"ERRO DE JSON: Problema ao analisar JSON da IA: {e}")
         print(f"RESPOSTA BRUTA DA IA QUE CAUSOU O ERRO:\n{ia_text_response}")
