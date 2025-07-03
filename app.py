@@ -25,7 +25,7 @@ def generate_roteiro():
     if not tema_escolhido or not num_blocos:
         return jsonify({"error": "Dados incompletos fornecidos. Por favor, preencha todos os campos."}), 400
 
-    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (COM REFORÇO NO JSON!) ---
+    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (COM REFORÇO FINAL NO JSON!) ---
     prompt_para_ia = f"""
 Você é um roteirista profissional com experiência em histórias emocionantes, visceralmente detalhadas e em primeira pessoa, voltadas para vídeos narrados no estilo "canal dark" brasileiro. Seu público são brasileiros que consomem conteúdos sobre conflitos familiares profundos, traições dilacerantes, superações marcantes e revelações chocantes.
 
@@ -38,13 +38,13 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
     * **Reviravoltas Chocantes e Situações Inesperadas:** A história DEVE conter no mínimo duas reviravoltas significativas e/ou situações inesperadas que alterem drasticamente o curso da narrativa, elevando a tensão de forma dramática. Pense em "plot twists" que um espectador de novela esperaria.
     * **Presença Vívida do Cotidiano Brasileiro:** Incorpore de forma autêntica elementos culturais, sociais e comportamentais do cotidiano brasileiro. Pense em gírias, costumes familiares, cenários típicos (como uma cozinha de casa de vó, uma rua movimentada de bairro, uma reunião de família com discussões veladas), interações sociais e problemas comuns no Brasil. Faça o público se reconhecer na ambientação.
 
-    * **Extensão e Densidade por Bloco:** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco deve ter entre **90 e 180 palavras**, garantindo que o conteúdo seja denso, aprofundado e preencha substancialmente essa extensão, sem diluir a qualidade narrativa. A IA deve se esforçar para atingir o limite superior (2000 palavras) se o conteúdo permitir, mas mantendo a qualidade.
+    * **Extensão e Densidade por Bloco:** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco DEVE ter entre **1500 e 2000 palavras**, garantindo que o conteúdo seja densíssimo, aprofundado e preencha substancialmente essa extensão. A IA deve se esforçar para atingir o limite superior (2000 palavras) se o conteúdo e a qualidade narrativa permitirem, não "enchendo linguiça", mas aprofundando o drama e os detalhes.
 
     * **Linguagem e Voz da Narrativa (Aprimorada):** A linguagem e o ritmo da narrativa devem ser autênticos, apropriados ao contexto e emoção da história, e personalizados IMERSIVAMENTE de acordo com a idade, características e o tom de voz implícito do personagem principal. Por exemplo, uma personagem mais velha pode ter uma voz mais "carregada", lenta, nostálgica e reflexiva, com um vocabulário que remeta à sua vivência e sabedoria popular. Já uma mais jovem pode ser mais ágil, direta, impulsiva, e usar gírias mais contemporâneas ou um tom de desabafo intenso. A linguagem pode variar entre tons informais e mais formais quando a trama assim exigir, mas sempre mantendo a conexão emocional e a cotidianidade brasileira.
 
-    * **Divisão da História:** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco deve ter a quantidade de palavras calculada acima, garantindo que o conteúdo seja denso e aprofundado, sem diluir a qualidade narrativa.
+    * **Divisão da História:** A história deve ser dividida em exatamente {num_blocos} blocos. Cada bloco DEVE ter a quantidade de palavras calculada acima.
 
-    * **Voz Pessoal e Contextual:** Escreva como se o personagem estivesse desabafando e contando sua história mais íntima e chocante a um amigo, com uma linguagem empática e validadora, adaptada ao contexto emocional do público.
+    * **Voz Pessoal e Confessional (Desabafo):** Escreva como se o próprio narrador(a) estivesse desabafando diretamente com o leitor/espectador, com uma honestidade brutal e uma intimidade que convida à empatia. A narrativa deve fluir com naturalidade, permeada por uma emoção palpável, construindo um suspense envolvente através da cadência das palavras e o ritmo do desabafo.
 
     * **Originalidade Constante:**
         * Crie expressões únicas para cada roteiro.
@@ -53,19 +53,18 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
         * Ao sugerir analogias ou histórias, crie exemplos únicos e novos para este roteiro. Seja criativo e inteligente, mostrando um profundo entendimento do objetivo, emoção e público-alvo.
         * Procure maneiras criativas de expressar a mesma ideia. Invente novas maneiras de apresentar conceitos que já são conhecidos.
 
-    * **Variedade na Estrutura dos Blocos:**
-        * **Abertura (Bloco 1):** Comece com uma introdução única e imediatamente impactante. Pode ser com: Uma pergunta reflexiva e dilacerante; Um fato surpreendente que mude a percepção; Uma metáfora visual que evoke um sentimento forte; Frases que provoquem identificação imediata e profunda; Comandos humanos que mergulhem na psique do público.
+    * **Variedade na Estrutura dos Blocos:** A história deve seguir estritamente esta progressão em 5 atos, com a emoção e o suspense aumentando progressivamente:
+        * **Ato 1 (Bloco 1):** Apresentação do narrador e do problema inicial. Estabeleça o tom de desabafo e plante a semente do mistério ou conflito.
+        * **Ato 2 (Bloco 2):** Crescimento do conflito e da tensão. Detalhe os desafios iniciais e como eles afetam o narrador. Aprofunde as emoções.
+        * **Ato 3 (Bloco 3):** A primeira grande reviravolta. Introduza um evento inesperado que mude a direção da história, chocando o narrador e o público.
+        * **Ato 4 (Bloco 4):** Conflito no auge, descobertas bombásticas. A trama se intensifica com novas revelações e confrontos. O narrador está no limite.
+        * **Ato 5 (Bloco 5):** Desfecho (feliz ou trágico) com lição ou emoção final. O conflito principal se resolve, mas deixa uma marca profunda. O desfecho deve ser impactante e ressoar emocionalmente. (Adapte o número de blocos para acomodar os 5 atos se `num_blocos` for diferente de 5, distribuindo os atos entre os blocos disponíveis.)
 
     * **Gatilhos Mentais:** Use de 3 a 5 gatilhos mentais por roteiro, de forma sutil e estratégica, para não sobrecarregar o público. Distribua-os na Introdução, Desenvolvimento e Encerramento. Crie variações de gatilhos mentais originais e autênticos para cada novo roteiro. Exemplos de categorias a serem inspiradas: Autoridade, Reciprocidade, Escassez, Prova Social, Curiosidade avassaladora, Promessa de Transformação pessoal, Novidade (da revelação), Medo da Perda, Urgência da situação, Conexão profunda, Simplicidade (na linguagem para facilitar a identificação).
 
     * **Comandos Humanos Emocionais:** Use comandos humanos com Emoções predominantes e sentimentos associados, ao longo do roteiro (introdução, meio e fim), para tornar o roteiro mais humanizado e criar uma conexão mais próxima e íntima com o público. Crie variações originais e impactantes para cada novo roteiro.
 
-    * **Progressão Narrativa e Emocional dos Blocos:**
-        * **Bloco 1:** Apresente o cenário e o conflito inicial de forma a criar uma curiosidade imediata e conectar o público ao protagonista.
-        * **Blocos Intermediários:** Desenvolva a trama, intensificando drasticamente a tensão com eventos inesperados e revelações menores que aprofundam o drama. Mostre o impacto emocional avassalador dos acontecimentos.
-        * **Último Bloco (Clímax/Consequência):** Apresente o ápice do conflito, a maior revelação ou as consequências mais drásticas e chocantes. Finalize com uma reflexão profunda ou um desfecho que, mesmo não sendo um final feliz, traga um fechamento para a narrativa principal, mas que deixe um gancho para a CTA.
-
-**FORMATO DE SAÍDA FINAL (APENAS JSON): A resposta da IA DEVE ser um objeto JSON válido, e NADA ALÉM DISSO. Não inclua texto explicativo, formatação Markdown (como ```json), ou qualquer outro caractere antes ou depois do JSON. Apenas o JSON puro.**
+**FORMATO DE SAÍDA FINAL (APENAS JSON): A resposta da IA DEVE ser um objeto JSON válido, e NADA ALÉM DISSO. Não inclua texto explicativo, formatação Markdown (como ```json), ou qualquer outro caractere antes ou depois do JSON. Apenas o JSON puro. É ABSOLUTAMENTE CRÍTICO que a saída seja JSON válido para o sistema funcionar.**
 
 * `tema_sugerido`: (string) O tema escolhido ou gerado.
 * `historia`: (array de strings) Uma lista onde cada item é o texto de um bloco da história.
@@ -91,6 +90,7 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
         # DEBUG: Printa os primeiros 500 caracteres da resposta bruta da IA para o Render logs
         print(f"DEBUG: Resposta bruta da IA (primeiros 500 chars): \n{ia_text_response[:500]}...")
     except Exception as e:
+        # Captura erros da API (ex: conteúdo bloqueado, problema de conexão)
         print(f"Erro ao chamar a API Gemini: {e}")
         return jsonify({"error": f"Não foi possível gerar o roteiro. Erro na IA: {e}"}), 500
 
