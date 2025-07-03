@@ -1,19 +1,14 @@
 import google.generativeai as genai
 from flask import Flask, jsonify, request
-from flask_cors import CORS # Importa a extensão CORS
-import json # Importa a biblioteca JSON para trabalhar com dados JSON
-import os # Importa a biblioteca OS para acessar variáveis de ambiente
+from flask_cors import CORS 
+import json 
+import os 
 
 app = Flask(__name__)
-CORS(app) # Habilita o CORS para todas as rotas (permite comunicação entre frontend e backend)
+CORS(app) 
 
 # --- CONFIGURAÇÃO DA CHAVE DE API DO GEMINI ---
-# !!! IMPORTANTE: COLOQUE SUA CHAVE DE API AQUI. Nunca exponha isso no frontend!
-# Se for para produção, idealmente carregue de variáveis de ambiente (ex: import os; api_key=os.environ.get("GEMINI_API_KEY"))
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY")) # Lendo da variável de ambiente (como configurado no Render)
-# Se você ainda está testando localmente sem variável de ambiente no Windows, pode usar:
-# genai.configure(api_key="SUA_CHAVE_DE_API_AQUI")
-# Certifique-se de que a chave está entre aspas duplas!
+genai.configure(api_key=os.environ.get("AIzaSyCSkqbHKuyF1FNU1Y2llSz0uaUcz9R9Ja8")) 
 # --- FIM DA CONFIGURAÇÃO ---
 
 @app.route('/')
@@ -22,22 +17,19 @@ def home():
 
 @app.route('/generate-roteiro', methods=['POST'])
 def generate_roteiro():
-    # Pega os dados JSON enviados pelo frontend
     data = request.json 
     
-    # Extrai os dados específicos
     tema_escolhido = data.get('tema')
-    # duracao_video foi removido, pois agora focamos em palavras por bloco
     num_blocos = data.get('blocos')
 
-    if not tema_escolhido or not num_blocos: # 'duracao_video' foi removido desta verificação
+    if not tema_escolhido or not num_blocos:
         return jsonify({"error": "Dados incompletos fornecidos. Por favor, preencha todos os campos."}), 400
 
-    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (MELHORADO NOVAMENTE!) ---
+    # --- CONSTRUÇÃO DO PROMPT COMPLETO PARA A IA (COM REFORÇO NO JSON!) ---
     prompt_para_ia = f"""
 Você é um roteirista profissional com experiência em histórias emocionantes, visceralmente detalhadas e em primeira pessoa, voltadas para vídeos narrados no estilo "canal dark" brasileiro. Seu público são brasileiros que consomem conteúdos sobre conflitos familiares profundos, traições dilacerantes, superações marcantes e revelações chocantes.
 
-Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa que prenda a atenção de forma sufocante do início ao fim, provoque identificação emocional avassaladora e seja rica em detalhes como uma novela das 21h no Brasil. O formato de saída deve ser um JSON válido, conforme especificado no final.
+Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa que prenda a atenção de forma sufocante do início ao fim, provoque identificação emocional avassaladora e seja rica em detalhes como uma novela das 21h no Brasil. O formato de saída DEVE ser um JSON válido, conforme especificado no final.
 
 1.  **Tema da História:** O tema escolhido é: "{tema_escolhido}". Mergulhe profundamente neste tema, explorando todas as suas camadas emocionais.
 
@@ -73,7 +65,7 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
         * **Blocos Intermediários:** Desenvolva a trama, intensificando drasticamente a tensão com eventos inesperados e revelações menores que aprofundam o drama. Mostre o impacto emocional avassalador dos acontecimentos.
         * **Último Bloco (Clímax/Consequência):** Apresente o ápice do conflito, a maior revelação ou as consequências mais drásticas e chocantes. Finalize com uma reflexão profunda ou um desfecho que, mesmo não sendo um final feliz, traga um fechamento para a narrativa principal, mas que deixe um gancho para a CTA.
 
-**Ao final da geração, formate a saída como um objeto JSON. O JSON deve conter as seguintes chaves:**
+**FORMATO DE SAÍDA FINAL (APENAS JSON): A resposta da IA DEVE ser um objeto JSON válido, e NADA ALÉM DISSO. Não inclua texto explicativo, formatação Markdown (como ```json), ou qualquer outro caractere antes ou depois do JSON. Apenas o JSON puro.**
 
 * `tema_sugerido`: (string) O tema escolhido ou gerado.
 * `historia`: (array de strings) Uma lista onde cada item é o texto de um bloco da história.
@@ -86,45 +78,48 @@ Siga estas instruções com atenção cirúrgica, focando em gerar uma narrativa
     * `caracteristicas_fisicas`: (string) Descrição física relevante.
     * `elemento_visual_chave`: (string) Objeto, cenário ou breve descrição da cena icônica.
 * `srt_completo`: (string) A versão `.srt` completa da história, unificada, com timestamps fictícios de 10 segundos por segmento (formato `1\n00:00:00,000 --> 00:00:10,000\n[Texto]\n\n2\n00:00:10,000 --> 00:00:20,000\n[Texto]`).
-
-**Evite:**
--   Frases frias, linguagem muito formal ou poética (a menos que seja parte da voz do personagem e traga impacto).
--   Termos estrangeiros ou fora da realidade brasileira (a menos que se encaixem perfeitamente no cotidiano).
--   Repetições excessivas de palavras, ideias ou blocos com pouca progressão narrativa.
--   Finais que resolvam tudo de forma simples ou feliz, a menos que a história realmente exija. O foco é a complexidade emocional e o impacto duradouro.
--   Qualquer menção direta a que você é uma IA ou um modelo de linguagem.
--   Qualquer texto fora da estrutura JSON solicitada.
 """
-    # --- FIM DA CONSTRUÇÃO DO PROMPT (MELHORADO!) ---
+    # --- FIM DA CONSTRUÇÃO DO PROMPT (MELHORADO NOVAMENTE!) ---
 
-    # 1. Cria o modelo de IA (agora usando o modelo mais atualizado que você tem disponível)
+    # 1. Cria o modelo de IA (usando o modelo atualizado)
     model = genai.GenerativeModel('gemini-1.5-flash-latest') 
     
     # 2. Faz a chamada à IA. Usamos response.text para pegar a string diretamente.
     try:
         gemini_response = model.generate_content(prompt_para_ia)
-        # Tenta pegar o texto. Se a resposta não tiver texto (ex: filtro de segurança), pode dar erro
         ia_text_response = gemini_response.text
+        # DEBUG: Printa os primeiros 500 caracteres da resposta bruta da IA para o Render logs
+        print(f"DEBUG: Resposta bruta da IA (primeiros 500 chars): \n{ia_text_response[:500]}...")
     except Exception as e:
-        # Captura erros da API (ex: conteúdo bloqueado, problema de conexão)
         print(f"Erro ao chamar a API Gemini: {e}")
         return jsonify({"error": f"Não foi possível gerar o roteiro. Erro na IA: {e}"}), 500
 
     # Tenta analisar a string de resposta da IA como JSON
     try:
-        # A IA deve retornar uma string JSON válida.
-        # Vamos garantir que ela realmente retorne um JSON e não texto livre.
-        # Se a IA às vezes retorna texto extra (ex: "```json\n...\n```"), limpe antes de parsear.
-        if ia_text_response.strip().startswith("```json"):
-            ia_text_response = ia_text_response.strip()[len("```json"):].rstrip("```")
-        
-        roteiro_gerado_json = json.loads(ia_text_response) # Converte a string JSON para um objeto Python
+        # A IA DEVE retornar uma string JSON válida.
+        # Remove possíveis cabeçalhos de markdown como "```json\n" e "```" finais
+        cleaned_response = ia_text_response.strip()
+        if cleaned_response.startswith("```json"):
+            cleaned_response = cleaned_response[len("```json"):].strip()
+            if cleaned_response.endswith("```"):
+                cleaned_response = cleaned_response[:-len("```")].strip()
+        elif cleaned_response.startswith("```"): # Caso seja ``` sem json especificado
+            cleaned_response = cleaned_response[len("```"):].strip()
+            if cleaned_response.endswith("```"):
+                cleaned_response = cleaned_response[:-len("```")].strip()
+
+        # Debugging: Print a resposta limpa antes de tentar o JSON.loads()
+        print(f"DEBUG: Resposta limpa da IA para JSON.loads(): \n{cleaned_response[:500]}...")
+
+        roteiro_gerado_json = json.loads(cleaned_response) # Converte a string JSON para um objeto Python
+        print(f"DEBUG: JSON parseado com sucesso.")
+
     except json.JSONDecodeError as e:
-        print(f"Erro ao analisar JSON da IA: {e}")
-        print(f"Resposta bruta da IA: {ia_text_response}")
+        print(f"ERRO DE JSON: Problema ao analisar JSON da IA: {e}")
+        print(f"RESPOSTA BRUTA DA IA QUE CAUSOU O ERRO:\n{ia_text_response}")
         return jsonify({"error": f"Erro interno: A IA não retornou um formato JSON válido. Tente novamente ou ajuste o prompt. Detalhes: {e}"}), 500
     except Exception as e:
-        print(f"Erro inesperado ao processar resposta da IA: {e}")
+        print(f"ERRO INESPERADO: ao processar resposta da IA: {e}")
         return jsonify({"error": f"Erro inesperado ao processar roteiro. Detalhes: {e}"}), 500
 
     # O roteiro_gerado_json já está no formato que o frontend espera!
